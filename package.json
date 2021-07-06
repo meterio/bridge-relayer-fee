@@ -1,0 +1,45 @@
+{
+  "name": "@meterio/bridge-relayer-fee",
+  "version": "0.0.1",
+  "description": "Calculate relayer fee",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "author": {
+    "name": "Simon Zhang",
+    "email": "zhanghan.simon@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meterio/bridge-relayer-fee.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meterio/bridge-relayer-fee/issues"
+  },
+  "tags": [
+    "typescript",
+    "meter",
+    "sync",
+    "Defi",
+    "bridge",
+    "relayer"
+  ],
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^12.6.8",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "bignumber.js": "^9.0.0",
+    "csv-parse": "^4.15.4",
+    "csv-stringify": "^5.6.0",
+    "csv-writer": "^1.6.0",
+    "envalid": "^6.0.2",
+    "ethers": "^5.1.4",
+    "web3": "1.2.10"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/ts-node src/main.ts"
+  }
+}
