@@ -15,7 +15,8 @@ export const getTxsByAccount = async (
   return res.data.txSummaries.map((tx) => ({
     from: tx.origin,
     to: tx.majorTo,
-    gasUsed: tx.paid,
+    gasUsed: tx.gasUsed,
+    gasPrice: tx.gasPrice,
   }));
 };
 

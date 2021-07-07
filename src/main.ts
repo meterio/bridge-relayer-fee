@@ -68,9 +68,9 @@ export class RelayerFeeCalculator {
         if (!(relayer in gasSubtotals)) {
           gasSubtotals[relayer] = new BigNumber(0);
         }
-        const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice ? tx.gasPrice: 1)
+        const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice)
 
-        gasSubtotals[relayer] = gasSubtotals[relayer].plus( gas);
+        gasSubtotals[relayer] = gasSubtotals[relayer].plus(gas);
         totalGas = totalGas.plus(gas)
       }
 
