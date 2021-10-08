@@ -1,39 +1,44 @@
-import axios from 'axios';
-import BigNumber from 'bignumber.js';
-import Web3 from 'web3';
+import axios from "axios";
+import BigNumber from "bignumber.js";
+import Web3 from "web3";
 
-import { Mode,Network } from '../const';
+import { ScanAPI } from "./scanapi";
 
-export const getTxsByAccount = async (
-  address: string,
-  startBlock: number | string = 0,
-  endBlock: number | string = 'latest',
-  sort = 'asc'
-) => {
-  const url = `https://api.meter.io:8000/api/accounts/${address}/txlist?startblock=${startBlock}&endblock=${endBlock}&sort=${sort}`;
-  const res = await axios.get(url);
-  return res.data.txSummaries.map((tx) => ({
-    from: tx.origin,
-    to: tx.majorTo,
-    gasUsed: tx.gasUsed,
-    gasPrice: tx.gasPrice,
-  }));
-};
+export class MeterScanAPI extends ScanAPI {
+  constructor() {
+    super();
+  }
 
-export const getBalance = async (network: Network, address: string) => {
-  const url = network === Network.MeterMainnet ? 'http://mainnet.meter.io:8669' : 'http://shoal.meter.io:8669';
-  const res = await axios.get(`${url}/accounts/${address}`);
-  return new BigNumber(res.data.energy);
-};
-
-export const getTransaction = async (mode: Mode, txHash: string) => {
-  const url = mode === Mode.Main ? 'http://mainnet.meter.io:8669' : 'http://shoal.meter.io:8669';
-  const res = await axios.get(`${url}/transactions/${txHash}`);
-  let tx = res.data;
-  return { ...tx, input: tx.clauses && tx.clauses.length > 0 ? tx.clauses[0].data : '' };
-};
-
-export const getBlockNumber = async (provider: string) => {
-  const web3 = new Web3(provider);
-  return await web3.eth.getBlockNumber();
-};
+  async getTxsByAccount(
+    address: string,
+    startBlock: number | string = 0,
+    endBlock: number | string = "latest",
+    sort = "asc"
+  ): Promise<any> {
+    const url = `https://api.meter.io:8000/api/accounts/${address}/txlist?startblock=${startBlock}&endblock=${endBlock}&sort=${sort}`;
+    const res = await axios.get(url);
+    return res.data.txSummaries.map((tx) => ({
+      from: tx.origin,
+      to: tx.majorTo,
+      gasUsed: tx.paid,
+      gasPrice: 1,
+    }));
+  }
+  async getBalance(provider: string, address: string): Promise<BigNumber> {
+    const res = await axios.get(`${provider}/accounts/${address}`);
+    return new BigNumber(res.data.energy);
+  }
+  async getTransaction(provider: string, txHash: string): Promise<any> {
+    const res = await axios.get(`${provider}/transactions/${txHash}`);
+    let tx = res.data;
+    return {
+      ...tx,
+      input: tx.clauses && tx.clauses.length > 0 ? tx.clauses[0].data : "",
+    };
+  }
+  async getBlockNumber(provider: string): Promise<number> {
+    const res = await axios.get(`${provider}/blocks/best`);
+    let blk = res.data;
+    return Number(blk.number);
+  }
+}

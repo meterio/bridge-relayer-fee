@@ -1,11 +1,11 @@
-import { cleanEnv, num, port, str } from 'envalid';
+import { cleanEnv, num, port, str } from "envalid";
 
 function validateEnv() {
   cleanEnv(process.env, {
     // api key
     ETHERSCAN_API_KEY: str(),
     BSCSCAN_API_KEY: str(),
-    
+
     // relayer
     RELAYER_ADDRESSES: str(),
     ETH_START_BLOCK: num(),
@@ -14,8 +14,10 @@ function validateEnv() {
     METER_END_BLOCK: str(),
     BSC_START_BLOCK: num(),
     BSC_END_BLOCK: str(),
+    AVA_START_BLOCK: str(),
+    AVA_END_BLOCK: str(),
   });
 }
 
-require('dotenv').config();
+require("dotenv").config();
 validateEnv();
