@@ -5,7 +5,7 @@ import path from "path";
 import BigNumber from "bignumber.js";
 import { ChainConfig, Network, mainConfigs } from "./const";
 import { saveCSVFromObjects } from "./utils/csv";
-import { SCAN_APIS } from "./utils";
+import { SCAN_APIS } from "./scan";
 
 const {
   RELAYER_ADDRESSES,
@@ -19,6 +19,7 @@ const {
   AVA_END_BLOCK,
 } = process.env;
 
+console.log(BSC_START_BLOCK)
 export class RelayerFeeCalculator {
   private configs: ChainConfig[] = mainConfigs;
 
@@ -47,9 +48,11 @@ export class RelayerFeeCalculator {
         case Network.BSCMainnet:
           startBlock = BSC_START_BLOCK;
           endBlock = BSC_END_BLOCK;
+          break;
         case Network.AvalancheMainnet:
           startBlock = AVA_START_BLOCK;
           endBlock = AVA_END_BLOCK;
+          break;
       }
 
       if (!(config.network in SCAN_APIS)) {
@@ -64,10 +67,14 @@ export class RelayerFeeCalculator {
         providerUrl = "http://mainnet.meter.io:8669";
       }
 
-      console.log(config.network, " provider url:", providerUrl);
+      console.log('-'.repeat(60))
+      console.log(`Scanning ${Network[config.network]}`)
+      console.log(`Provider URL: ${providerUrl}`)
+
       if (endBlock.toLowerCase() === "latest") {
         endBlock = await api.getBlockNumber(providerUrl);
       }
+      console.log(`Block range: from ${startBlock} to ${endBlock}`)
 
       txs = await api.getTxsByAccount(config.bridgeAddr, startBlock, endBlock);
       txs = txs.filter(
@@ -75,6 +82,7 @@ export class RelayerFeeCalculator {
           tx.from.toLowerCase() in relayerAddrs ||
           tx.to.toLowerCase() in relayerAddrs
       );
+      console.log(`#Txns: ${txs.length}`)
 
       let gasSubtotals: { [key: string]: BigNumber } = {};
       let totalGas = new BigNumber(0);
@@ -94,13 +102,13 @@ export class RelayerFeeCalculator {
         totalGas = totalGas.plus(gas);
       }
 
-      console.log("gasSubtotals: ", JSON.stringify(gasSubtotals));
       console.log("Total used gas: ", totalGas.toString());
 
       const balance = await api.getBalance(providerUrl, config.bridgeAddr);
       console.log(`Current bridge balance: `, balance.toString());
 
       let results = [];
+      console.log('Gas Usage Details')
       for (const addr in gasSubtotals) {
         const subtotal = gasSubtotals[addr];
         const percent = subtotal.dividedBy(totalGas);
@@ -113,10 +121,15 @@ export class RelayerFeeCalculator {
           endBlock,
         });
         console.log(
-          `Relayer ${addr} used ${percent.times(100).toFixed(1)}% of total gas`
+          `  Relayer ${addr} used gas: ${subtotal} = ${percent.times(100).toFixed(1)}% of total gas`
         );
       }
 
+      const date = new Date();
+      const month = `0${date.getMonth() + 1}`.slice(-2);
+      const day = `0${date.getDate()}`.slice(-2);
+      const filename = `${Network[config.network].toLowerCase()}-${month}${day}.csv`;
+      const filepath = path.join( __dirname, "..", "csv", filename);
       await saveCSVFromObjects(
         results,
         [
@@ -127,16 +140,10 @@ export class RelayerFeeCalculator {
           { id: "startBlock", title: "Start Block" },
           { id: "endBlock", title: "End Block" },
         ],
-        path.join(
-          __dirname,
-          "..",
-          "csv",
-          `relayer-${Network[config.network].toLowerCase()}.csv`
-        )
-      );
+        filepath)
 
       console.log(
-        `csv/relayer-${Network[config.network].toLowerCase()}.csv saved.`
+        `Calculation result saved at ${filepath}`
       );
     }
   }

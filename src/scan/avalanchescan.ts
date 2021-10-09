@@ -27,7 +27,7 @@ export class AvalancheScanAPI extends ScanAPI {
     }
 
     const res = await axios.get(url);
-    return res.data.Transactions;
+    return res.data.Transactions.map(tx=>({...tx, from:tx.fromAddr, to:tx.toAddr, gasUsed:tx.blockGasUsed}));
   }
 
   async getBalance(provider: string, address: string): Promise<BigNumber> {

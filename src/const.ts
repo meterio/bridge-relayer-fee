@@ -22,7 +22,6 @@ export class ChainConfig {
   providerUrl: string;
   bridgeAddr: string;
   handlerAddr: string;
-  startBlockNum: number;
   provider?: ethers.providers.Provider;
   bridge?: ethers.Contract;
   windowSize: number;
@@ -34,28 +33,9 @@ export const mainConfigs: ChainConfig[] = [
     providerUrl:
       "https://mainnet.infura.io/v3/2ad4eeb4c6a14a88b7b16872a0404a9a",
     chainId: 1,
-    bridgeAddr: "0xbD515E41DF155112Cc883f8981CB763a286261be",
+    bridgeAddr: "0xa2A22B46B8df38cd7C55E6bf32Ea5a32637Cf2b1",
     handlerAddr: "0xde4fC7C3C5E7bE3F16506FcC790a8D93f8Ca0b40",
-    startBlockNum: 12345342,
     windowSize: 500000,
-  },
-  {
-    network: Network.MeterMainnet,
-    providerUrl: "https://rpc.meter.io",
-    chainId: 3,
-    bridgeAddr: "0x7C6Fb3B4a23BD9b0c2874bEe4EF672C64e83838B",
-    handlerAddr: "0x60f1ABAa3ED8A573c91C65A5b82AeC4BF35b77b8",
-    startBlockNum: 10898522,
-    windowSize: 1000000,
-  },
-  {
-    network: Network.BSCMainnet,
-    providerUrl: "https://bsc-dataseed.binance.org/",
-    chainId: 4,
-    bridgeAddr: "0x223fafbc2cA53A75CcfF5B2369128d3d1a828F36",
-    handlerAddr: "0x5945241BBB68B4454bB67Bd2B069e74C09AC3D51",
-    startBlockNum: 7847876,
-    windowSize: 5000,
   },
   {
     network: Network.AvalancheMainnet,
@@ -63,9 +43,25 @@ export const mainConfigs: ChainConfig[] = [
     chainId: 2,
     bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
     handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
-    startBlockNum: 2583865,
     windowSize: 5000,
   },
+  {
+    network: Network.MeterMainnet,
+    providerUrl: "https://rpc.meter.io",
+    chainId: 3,
+    bridgeAddr: "0x3f396Af107049232Bc2804C171ecad65DBCC0323",
+    handlerAddr: "0x60f1ABAa3ED8A573c91C65A5b82AeC4BF35b77b8",
+    windowSize: 1000000,
+  },
+  {
+    network: Network.BSCMainnet,
+    providerUrl: "https://bsc-dataseed.binance.org/",
+    chainId: 4,
+    bridgeAddr: "0xFd55eBc7bBde603A048648C6eAb8775c997C1001",
+    handlerAddr: "0x5945241BBB68B4454bB67Bd2B069e74C09AC3D51",
+    windowSize: 5000,
+  },
+  
 ];
 
 const meterNetworks = {
