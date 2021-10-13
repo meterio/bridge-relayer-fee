@@ -1,7 +1,4 @@
 import axios from "axios";
-import BigNumber from "bignumber.js";
-import Web3 from "web3";
-
 import { ScanAPI } from "./scanapi";
 
 export class MeterScanAPI extends ScanAPI {
@@ -23,22 +20,5 @@ export class MeterScanAPI extends ScanAPI {
       gasUsed: tx.paid,
       gasPrice: 1,
     }));
-  }
-  async getBalance(provider: string, address: string): Promise<BigNumber> {
-    const res = await axios.get(`${provider}/accounts/${address}`);
-    return new BigNumber(res.data.energy);
-  }
-  async getTransaction(provider: string, txHash: string): Promise<any> {
-    const res = await axios.get(`${provider}/transactions/${txHash}`);
-    let tx = res.data;
-    return {
-      ...tx,
-      input: tx.clauses && tx.clauses.length > 0 ? tx.clauses[0].data : "",
-    };
-  }
-  async getBlockNumber(provider: string): Promise<number> {
-    const res = await axios.get(`${provider}/blocks/best`);
-    let blk = res.data;
-    return Number(blk.number);
   }
 }

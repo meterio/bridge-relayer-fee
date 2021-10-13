@@ -6,6 +6,7 @@ import BigNumber from "bignumber.js";
 import { ChainConfig, Network, mainConfigs } from "./const";
 import { saveCSVFromObjects } from "./utils/csv";
 import { SCAN_APIS } from "./scan";
+import { ethers } from "ethers";
 
 const {
   RELAYER_ADDRESSES,
@@ -19,7 +20,6 @@ const {
   AVA_END_BLOCK,
 } = process.env;
 
-console.log(BSC_START_BLOCK)
 export class RelayerFeeCalculator {
   private configs: ChainConfig[] = mainConfigs;
 
@@ -61,18 +61,11 @@ export class RelayerFeeCalculator {
       }
       const api = SCAN_APIS[config.network];
 
-      let providerUrl = config.providerUrl;
-
-      if (config.network === Network.MeterMainnet) {
-        providerUrl = "http://mainnet.meter.io:8669";
-      }
-
       console.log('-'.repeat(60))
       console.log(`Scanning ${Network[config.network]}`)
-      console.log(`Provider URL: ${providerUrl}`)
 
       if (endBlock.toLowerCase() === "latest") {
-        endBlock = await api.getBlockNumber(providerUrl);
+        endBlock = await config.provider.getBlockNumber();
       }
       console.log(`Block range: from ${startBlock} to ${endBlock}`)
 
@@ -83,6 +76,17 @@ export class RelayerFeeCalculator {
           tx.to.toLowerCase() in relayerAddrs
       );
       console.log(`#Txns: ${txs.length}`)
+      if (config.network === Network.AvalancheMainnet){
+        console.log(`Correct gasUsed field for avalanche tx with transaction receipt, #txs: ${txs.length}`)
+        for (let i in txs){
+          let tx = txs[i]
+          const provider = new ethers.providers.JsonRpcProvider(config.providerUrl);
+          console.log(`fetching tx receipt for: ${tx.hash}, ${i} of ${txs.length}`)
+          const avatx = await provider.getTransactionReceipt(tx.hash)
+          console.log(`got gasUsed: ${avatx.gasUsed.toString()}`)
+          tx.gasUsed = avatx.gasUsed.toString();
+        }
+      }
 
       let gasSubtotals: { [key: string]: BigNumber } = {};
       let totalGas = new BigNumber(0);
@@ -104,7 +108,7 @@ export class RelayerFeeCalculator {
 
       console.log("Total used gas: ", totalGas.toString());
 
-      const balance = await api.getBalance(providerUrl, config.bridgeAddr);
+      const balance = (await config.provider.getBalance(config.bridgeAddr)).toString();
       console.log(`Current bridge balance: `, balance.toString());
 
       let results = [];
@@ -114,7 +118,7 @@ export class RelayerFeeCalculator {
         const percent = subtotal.dividedBy(totalGas);
         results.push({
           addr,
-          award: balance.times(subtotal).dividedBy(totalGas).toFixed(0),
+          award: new BigNumber(balance).times(subtotal).dividedBy(totalGas).toFixed(0),
           gasPercent: percent.toFixed(3),
           gasUsed: subtotal.toFixed(0),
           startBlock,

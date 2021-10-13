@@ -23,7 +23,6 @@ export class ChainConfig {
   bridgeAddr: string;
   handlerAddr: string;
   provider?: ethers.providers.Provider;
-  bridge?: ethers.Contract;
   windowSize: number;
 }
 
@@ -36,14 +35,6 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0xa2A22B46B8df38cd7C55E6bf32Ea5a32637Cf2b1",
     handlerAddr: "0xde4fC7C3C5E7bE3F16506FcC790a8D93f8Ca0b40",
     windowSize: 500000,
-  },
-  {
-    network: Network.AvalancheMainnet,
-    providerUrl: "https://api.avax.network/ext/bc/C/rpc",
-    chainId: 2,
-    bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
-    handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
-    windowSize: 5000,
   },
   {
     network: Network.MeterMainnet,
@@ -61,8 +52,18 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x5945241BBB68B4454bB67Bd2B069e74C09AC3D51",
     windowSize: 5000,
   },
-  
+  {
+    network: Network.AvalancheMainnet,
+    providerUrl: "https://api.avax.network/ext/bc/C/rpc",
+    chainId: 2,
+    bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
+    handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
+    windowSize: 5000,
+  },
 ];
+for (const c of mainConfigs){
+  c.provider = new ethers.providers.JsonRpcProvider(c.providerUrl)
+}
 
 const meterNetworks = {
   test: {
