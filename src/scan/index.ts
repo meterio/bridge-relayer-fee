@@ -1,13 +1,15 @@
 import { Network } from "../const";
 
-import * as bscscan from "./bscscan";
-import * as etherscan from "./etherscan";
-import * as meterscan from "./meterscan";
-import * as avalanchescan from "./avalanchescan";
+import {BSCScanAPI} from "./bscscan";
+import {EthScanAPI} from "./etherscan";
+import {MeterScanAPI} from "./meterscan";
+import {AvalancheScanAPI} from "./avalanchescan";
+import {MoonbeamScanAPI} from "./moonbeamscan"
 
 export const SCAN_APIS = {
-  [Network.Ethereum]: new etherscan.EthScanAPI(),
-  [Network.BSCMainnet]: new bscscan.BSCScanAPI(),
-  [Network.MeterMainnet]: new meterscan.MeterScanAPI(),
-  [Network.AvalancheMainnet]: new avalanchescan.AvalancheScanAPI()
+  [Network.Ethereum]: new EthScanAPI(),
+  [Network.BSCMainnet]: new BSCScanAPI(),
+  [Network.MeterMainnet]: new MeterScanAPI(),
+  [Network.AvalancheMainnet]: new AvalancheScanAPI(),
+  [Network.MoonriverMainnet]: new MoonbeamScanAPI()
 };

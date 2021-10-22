@@ -19,3 +19,10 @@ yarn start
 ### Result
 
 Result will be saved under `csv` folder in csv format.
+
+### Steps for new network support
+
+1. Define `enum Network` in `src/const.ts`, it should be exactly the same with definition here: ``
+2. Extend `mainConfigs` in `src/const.ts` with bridge/handler configs
+3. Implement `ScanAPI` interface, put the file under `src/scan/`. And update `const SCAN_APIS` in `src/scan/index.ts`
+4. Define `XXX_START_BLOCK` and `XXX_END_BLOCK` in `.env` file, import and use it in `main.ts`. 

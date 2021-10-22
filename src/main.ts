@@ -18,6 +18,8 @@ const {
   BSC_END_BLOCK,
   AVA_START_BLOCK,
   AVA_END_BLOCK,
+  MOONBEAM_START_BLOCK,
+  MOONBEAM_END_BLOCK,
 } = process.env;
 
 export class RelayerFeeCalculator {
@@ -52,6 +54,10 @@ export class RelayerFeeCalculator {
         case Network.AvalancheMainnet:
           startBlock = AVA_START_BLOCK;
           endBlock = AVA_END_BLOCK;
+          break;
+        case Network.MoonriverMainnet:
+          startBlock = MOONBEAM_START_BLOCK;
+          endBlock = MOONBEAM_END_BLOCK;
           break;
       }
 

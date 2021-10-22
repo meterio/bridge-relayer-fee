@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+// Please reference https://github.com/meterio/bridge-sync/blob/master/src/const/network.ts
 export enum Network {
   Ethereum = "Ethereum",
   MeterMainnet = "MeterMainnet",
@@ -9,6 +10,8 @@ export enum Network {
   MeterTestnet = "MeterTestnet",
   BSCTestnet = "BSCTestnet",
   AvalancheTestnet = "AvalancheTestnet",
+  MoonriverMainnet = 'MoonriverMainnet',
+  MoonriverTestnet = 'MoonriverTestnet'
 }
 
 export enum Mode {
@@ -60,6 +63,14 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
     windowSize: 5000,
   },
+  {
+    network: Network.MoonriverMainnet,
+    providerUrl: "https://rpc.moonriver.moonbeam.network",
+    chainId: 5,
+    bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
+    handlerAddr: "0x48A6fd66512D45006FC0426576c264D03Dfda304",
+    windowSize: 10000,
+  }
 ];
 for (const c of mainConfigs){
   c.provider = new ethers.providers.JsonRpcProvider(c.providerUrl)
