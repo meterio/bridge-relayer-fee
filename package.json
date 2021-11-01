@@ -40,6 +40,6 @@
     "web3": "1.2.10"
   },
   "scripts": {
-    "start": "./node_modules/.bin/ts-node src/main.ts"
+    "start": "./node_modules/.bin/ts-node src/main1.ts"
   }
 }
