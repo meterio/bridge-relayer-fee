@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
 
+export const UNIT_WEI = 1e18;
+
 // Please reference https://github.com/meterio/bridge-sync/blob/master/src/const/network.ts
 export enum Network {
   Ethereum = "Ethereum",
@@ -10,8 +12,8 @@ export enum Network {
   MeterTestnet = "MeterTestnet",
   BSCTestnet = "BSCTestnet",
   AvalancheTestnet = "AvalancheTestnet",
-  MoonriverMainnet = 'MoonriverMainnet',
-  MoonriverTestnet = 'MoonriverTestnet'
+  MoonriverMainnet = "MoonriverMainnet",
+  MoonriverTestnet = "MoonriverTestnet",
 }
 
 export enum Mode {
@@ -27,6 +29,7 @@ export class ChainConfig {
   handlerAddr: string;
   provider?: ethers.providers.Provider;
   windowSize: number;
+  coinId: string;
 }
 
 export const mainConfigs: ChainConfig[] = [
@@ -38,6 +41,7 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0xa2A22B46B8df38cd7C55E6bf32Ea5a32637Cf2b1",
     handlerAddr: "0xde4fC7C3C5E7bE3F16506FcC790a8D93f8Ca0b40",
     windowSize: 500000,
+    coinId: "ethereum",
   },
   {
     network: Network.MeterMainnet,
@@ -46,6 +50,7 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0x3f396Af107049232Bc2804C171ecad65DBCC0323",
     handlerAddr: "0x60f1ABAa3ED8A573c91C65A5b82AeC4BF35b77b8",
     windowSize: 1000000,
+    coinId: "meter-stable",
   },
   {
     network: Network.BSCMainnet,
@@ -54,6 +59,7 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0xFd55eBc7bBde603A048648C6eAb8775c997C1001",
     handlerAddr: "0x5945241BBB68B4454bB67Bd2B069e74C09AC3D51",
     windowSize: 5000,
+    coinId: "binancecoin",
   },
   {
     network: Network.AvalancheMainnet,
@@ -62,6 +68,7 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
     handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
     windowSize: 5000,
+    coinId: "avalanche-2",
   },
   {
     network: Network.MoonriverMainnet,
@@ -70,10 +77,11 @@ export const mainConfigs: ChainConfig[] = [
     bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
     handlerAddr: "0x48A6fd66512D45006FC0426576c264D03Dfda304",
     windowSize: 10000,
-  }
+    coinId: "moonriver",
+  },
 ];
-for (const c of mainConfigs){
-  c.provider = new ethers.providers.JsonRpcProvider(c.providerUrl)
+for (const c of mainConfigs) {
+  c.provider = new ethers.providers.JsonRpcProvider(c.providerUrl);
 }
 
 const meterNetworks = {

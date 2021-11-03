@@ -3,10 +3,11 @@ require("./utils/validateEnv");
 import path from "path";
 
 import BigNumber from "bignumber.js";
-import { ChainConfig, Network, mainConfigs } from "./const";
+import { ChainConfig, Network, mainConfigs, UNIT_WEI } from "./const";
 import { saveCSVFromObjects } from "./utils/csv";
 import { SCAN_APIS } from "./scan";
 import { ethers } from "ethers";
+import { getTokenPrice } from "./utils";
 
 const {
   RELAYER_ADDRESSES,
@@ -25,6 +26,7 @@ const {
 export class RelayerFeeCalculator {
   private configs: ChainConfig[] = mainConfigs;
   private relayerAddrs = {};
+  private startAndEndBolck = {};
 
   constructor() {
     for (const addr of RELAYER_ADDRESSES.split(",")) {
@@ -43,7 +45,7 @@ export class RelayerFeeCalculator {
     let results = [];
     console.log("Gas Usage Details");
     for (const c of this.configs) {
-      let { startBlock, endBlock } = await this.getStartEndBlock(c);
+      let { startBlock, endBlock } = this.startAndEndBolck[c.network];
       for (const addr in this.relayerAddrs) {
         const subtotal = gasSubtotals[addr];
         const percent = subtotal.dividedBy(totalGas);
@@ -102,6 +104,11 @@ export class RelayerFeeCalculator {
 
       let { startBlock, endBlock } = await this.getStartEndBlock(config);
 
+      this.startAndEndBolck[config.network] = {
+        startBlock,
+        endBlock,
+      };
+
       if (!(config.network in SCAN_APIS)) {
         console.log("NOT SUPPORTED NETWORK: ", Network[config.network]);
         continue;
@@ -138,6 +145,10 @@ export class RelayerFeeCalculator {
         }
       }
 
+      // 获取token价格
+      const priceData = await getTokenPrice(config.coinId);
+      const price = priceData[config.coinId]["usd"];
+
       for (const tx of txs) {
         let relayer = "";
         if (tx.from.toLowerCase() in this.relayerAddrs) {
@@ -150,15 +161,18 @@ export class RelayerFeeCalculator {
         }
         const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice);
 
-        gasSubtotals[relayer] = gasSubtotals[relayer].plus(gas);
-        totalGas = totalGas.plus(gas);
+        const dollorGas = gas.div(UNIT_WEI).times(price);
+
+        gasSubtotals[relayer] = gasSubtotals[relayer].plus(dollorGas);
+        totalGas = totalGas.plus(dollorGas);
       }
 
       const balance = (
         await config.provider.getBalance(config.bridgeAddr)
       ).toString();
-      bridgeBalances[config.network] = balance;
-      console.log(`Current bridge balance: `, balance.toString());
+      const dollorBalance = new BigNumber(balance).div(UNIT_WEI).times(price);
+      bridgeBalances[config.network] = dollorBalance;
+      console.log(`Current bridge balance: `, dollorBalance.toString());
     }
 
     return {
@@ -193,6 +207,9 @@ export class RelayerFeeCalculator {
         startBlock = MOONBEAM_START_BLOCK;
         endBlock = MOONBEAM_END_BLOCK;
         break;
+      default:
+        startBlock = 0;
+        endBlock = "latest";
     }
 
     if (endBlock.toLowerCase() === "latest") {
