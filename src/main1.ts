@@ -65,7 +65,11 @@ export class RelayerFeeCalculator {
     for (const c of this.configs) {
       let { startBlock, endBlock } = this.startAndEndBolck[c.network];
       for (const addr in this.relayerAddrs) {
-        const subtotal = subtotalGas[addr][c.network];
+        let subtotal = subtotalGas[addr][c.network];
+        if (!subtotal) {
+          console.log("undefined subtotal: ", addr, c.network)
+          subtotal = new BigNumber(0)
+        }
         const allSubtotal = allSubtotalGas[addr];
         const percent = allSubtotal.dividedBy(totalGas);
         const tokenPrice = tokenPrices[c.network];
@@ -85,9 +89,7 @@ export class RelayerFeeCalculator {
           endBlock,
         });
         console.log(
-          `  Relayer ${addr} used gas: ${allSubtotal} = ${percent
-            .times(100)
-            .toFixed(1)}% of total gas in ${c.network}`
+          `  Relayer ${addr} used gas: ${subtotal} in ${c.network}`
         );
       }
     }
@@ -197,9 +199,9 @@ export class RelayerFeeCalculator {
         }
         if (!(relayer in subtotalGas)) {
           subtotalGas[relayer] = {};
-          if (!(config.network in subtotalGas[relayer])) {
-            subtotalGas[relayer][config.network] = new BigNumber(0);
-          }
+        }
+        if (!(config.network in subtotalGas[relayer])) {
+          subtotalGas[relayer][config.network] = new BigNumber(0);
         }
         const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice);
 
