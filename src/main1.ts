@@ -36,19 +36,39 @@ export class RelayerFeeCalculator {
   }
 
   async start() {
-    const { totalGas, gasSubtotals, bridgeBalances } = await this.resolveTx();
+    const {
+      subtotalGas,
+      allSubtotalGas,
+      totalGas,
+      bridgeBalances,
+      tokenPrices,
+    } = await this.resolveTx();
 
-    await this.formatAndWriteCsv(gasSubtotals, totalGas, bridgeBalances);
+    await this.formatAndWriteCsv(
+      subtotalGas,
+      allSubtotalGas,
+      totalGas,
+      bridgeBalances,
+      tokenPrices
+    );
   }
 
-  async formatAndWriteCsv(gasSubtotals, totalGas, bridgeBalances) {
+  async formatAndWriteCsv(
+    subtotalGas,
+    allSubtotalGas,
+    totalGas,
+    bridgeBalances,
+    tokenPrices
+  ) {
     let results = [];
     console.log("Gas Usage Details");
     for (const c of this.configs) {
       let { startBlock, endBlock } = this.startAndEndBolck[c.network];
       for (const addr in this.relayerAddrs) {
-        const subtotal = gasSubtotals[addr];
-        const percent = subtotal.dividedBy(totalGas);
+        const subtotal = subtotalGas[addr][c.network];
+        const allSubtotal = allSubtotalGas[addr];
+        const percent = allSubtotal.dividedBy(totalGas);
+        const tokenPrice = tokenPrices[c.network];
 
         results.push({
           network: c.network,
@@ -57,13 +77,15 @@ export class RelayerFeeCalculator {
             .times(percent)
             .toFixed(0),
           gasPercent: percent.toFixed(3),
-          gasUsed: subtotal.toFixed(0),
-          totalGas: totalGas.toFixed(0),
+          tokenPrice,
+          gasUsed: subtotal.toFixed(2),
+          allGasUsed: allSubtotal.toFixed(2),
+          totalGas: totalGas.toFixed(2),
           startBlock,
           endBlock,
         });
         console.log(
-          `  Relayer ${addr} used gas: ${subtotal} = ${percent
+          `  Relayer ${addr} used gas: ${allSubtotal} = ${percent
             .times(100)
             .toFixed(1)}% of total gas in ${c.network}`
         );
@@ -83,7 +105,9 @@ export class RelayerFeeCalculator {
         { id: "addr", title: "Address" },
         { id: "award", title: "Award" },
         { id: "gasPercent", title: "Gas%" },
-        { id: "gasUsed", title: "All Gas Used" },
+        { id: "tokenPrice", title: "Price" },
+        { id: "gasUsed", title: "Gas Used" },
+        { id: "allGasUsed", title: "All Gas Used" },
         { id: "totalGas", title: "All Gas" },
         { id: "startBlock", title: "Start Block" },
         { id: "endBlock", title: "End Block" },
@@ -95,9 +119,18 @@ export class RelayerFeeCalculator {
   }
 
   async resolveTx() {
+    //- 所有relayer在所有链上的gas
     let totalGas = new BigNumber(0);
-    let gasSubtotals: { [key: string]: BigNumber } = {};
-    let bridgeBalances = {};
+    //- 存储某个relayer在所有链上的gas
+    let allSubtotalGas: { [key: string]: BigNumber } = {};
+    //- bridge上的balance
+    let bridgeBalances: { [network: string]: string } = {};
+    //- relayer 在某个链上的gas
+    let subtotalGas: {
+      [relayerAddress: string]: { [network: string]: BigNumber };
+    } = {};
+    //- 存储token price
+    let tokenPrices: { [network: string]: number } = {};
 
     for (const config of this.configs) {
       let txs = [];
@@ -149,6 +182,8 @@ export class RelayerFeeCalculator {
       const priceData = await getTokenPrice(config.coinId);
       const price = priceData[config.coinId]["usd"];
 
+      tokenPrices[config.network] = price;
+
       for (const tx of txs) {
         let relayer = "";
         if (tx.from.toLowerCase() in this.relayerAddrs) {
@@ -156,29 +191,39 @@ export class RelayerFeeCalculator {
         } else {
           relayer = tx.to.toLowerCase();
         }
-        if (!(relayer in gasSubtotals)) {
-          gasSubtotals[relayer] = new BigNumber(0);
+        if (!(relayer in allSubtotalGas)) {
+          allSubtotalGas[relayer] = new BigNumber(0);
+        }
+        if (!(relayer in subtotalGas)) {
+          subtotalGas[relayer] = {};
+        } else {
+          if (!(config.network in subtotalGas[relayer])) {
+            subtotalGas[relayer][config.network] = new BigNumber(0);
+          }
         }
         const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice);
 
         const dollorGas = gas.div(UNIT_WEI).times(price);
 
-        gasSubtotals[relayer] = gasSubtotals[relayer].plus(dollorGas);
+        subtotalGas[relayer][config.network] =
+          subtotalGas[relayer][config.network].plus(dollorGas);
+        allSubtotalGas[relayer] = allSubtotalGas[relayer].plus(dollorGas);
         totalGas = totalGas.plus(dollorGas);
       }
 
       const balance = (
         await config.provider.getBalance(config.bridgeAddr)
       ).toString();
-      const dollorBalance = new BigNumber(balance).div(UNIT_WEI).times(price);
-      bridgeBalances[config.network] = dollorBalance;
-      console.log(`Current bridge balance: `, dollorBalance.toString());
+      bridgeBalances[config.network] = balance;
+      console.log(`Current bridge balance: `, balance.toString());
     }
 
     return {
+      subtotalGas,
+      allSubtotalGas,
       totalGas,
-      gasSubtotals,
       bridgeBalances,
+      tokenPrices,
     };
   }
 
