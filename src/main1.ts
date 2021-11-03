@@ -181,6 +181,7 @@ export class RelayerFeeCalculator {
       // 获取token价格
       const priceData = await getTokenPrice(config.coinId);
       const price = priceData[config.coinId]["usd"];
+      console.log("token price: ", priceData);
 
       tokenPrices[config.network] = price;
 
@@ -196,7 +197,6 @@ export class RelayerFeeCalculator {
         }
         if (!(relayer in subtotalGas)) {
           subtotalGas[relayer] = {};
-        } else {
           if (!(config.network in subtotalGas[relayer])) {
             subtotalGas[relayer][config.network] = new BigNumber(0);
           }
