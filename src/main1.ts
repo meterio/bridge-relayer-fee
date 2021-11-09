@@ -67,8 +67,8 @@ export class RelayerFeeCalculator {
       for (const addr in this.relayerAddrs) {
         let subtotal = subtotalGas[addr][c.network];
         if (!subtotal) {
-          console.log("undefined subtotal: ", addr, c.network)
-          subtotal = new BigNumber(0)
+          console.log("undefined subtotal: ", addr, c.network);
+          subtotal = new BigNumber(0);
         }
         const allSubtotal = allSubtotalGas[addr];
         const percent = allSubtotal.dividedBy(totalGas);
@@ -88,9 +88,7 @@ export class RelayerFeeCalculator {
           startBlock,
           endBlock,
         });
-        console.log(
-          `  Relayer ${addr} used gas: ${subtotal} in ${c.network}`
-        );
+        console.log(`  Relayer ${addr} used gas: ${subtotal} in ${c.network}`);
       }
     }
 
@@ -162,23 +160,6 @@ export class RelayerFeeCalculator {
           tx.to.toLowerCase() in this.relayerAddrs
       );
       console.log(`#Txns: ${txs.length}`);
-      if (config.network === Network.AvalancheMainnet) {
-        console.log(
-          `Correct gasUsed field for avalanche tx with transaction receipt, #txs: ${txs.length}`
-        );
-        for (let i in txs) {
-          let tx = txs[i];
-          const provider = new ethers.providers.JsonRpcProvider(
-            config.providerUrl
-          );
-          console.log(
-            `fetching tx receipt for: ${tx.hash}, ${i} of ${txs.length}`
-          );
-          const avatx = await provider.getTransactionReceipt(tx.hash);
-          console.log(`got gasUsed: ${avatx.gasUsed.toString()}`);
-          tx.gasUsed = avatx.gasUsed.toString();
-        }
-      }
 
       // 获取token价格
       const priceData = await getTokenPrice(config.coinId);

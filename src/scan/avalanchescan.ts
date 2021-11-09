@@ -15,18 +15,8 @@ export class AvalancheScanAPI extends ScanAPI {
     endBlock: string | number = "latest",
     sort: string
   ): Promise<any> {
-    let url = `https://explorerapi.avax.network/v2/ctransactions?address=${address}`;
-    const start = Number(startBlock);
-    const end = Number(endBlock);
-
-    if (!isNaN(start) && start > 0) {
-      url += `&blockStart=${startBlock}`;
-    }
-    if (!isNaN(end) && end > 0) {
-      url += `&blockEnd=${endBlock}`;
-    }
-
+    const url = `https://api.snowtrace.io/api?module=account&action=txlist&address=${address}&startblock=${startBlock}&endblock=${endBlock}&sort=${sort}&apikey=${process.env.AVALANCHE_API_KEY}`;
     const res = await axios.get(url);
-    return res.data.Transactions.map(tx=>({...tx, from:tx.fromAddr, to:tx.toAddr, gasUsed:tx.blockGasUsed}));
+    return res.data.result;
   }
 }
