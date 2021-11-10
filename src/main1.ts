@@ -65,12 +65,19 @@ export class RelayerFeeCalculator {
     for (const c of this.configs) {
       let { startBlock, endBlock } = this.startAndEndBolck[c.network];
       for (const addr in this.relayerAddrs) {
-        let subtotal = subtotalGas[addr][c.network];
-        if (!subtotal) {
-          console.log("undefined subtotal: ", addr, c.network);
-          subtotal = new BigNumber(0);
+        let subtotal = new BigNumber(0);
+        let relayerAddr = subtotalGas[addr];
+        if (!relayerAddr) {
+          console.log(`Can not find relayer address ${addr} in all network.`);
+        } else {
+          if (relayerAddr[c.network] !== undefined) {
+            subtotal = relayerAddr[c.network];
+          } else {
+            console.log(`Can not find relayer address ${addr} in ${c.network}`);
+          }
         }
-        const allSubtotal = allSubtotalGas[addr];
+
+        const allSubtotal = allSubtotalGas[addr] || 0;
         const percent = allSubtotal.dividedBy(totalGas);
         const tokenPrice = tokenPrices[c.network];
 
