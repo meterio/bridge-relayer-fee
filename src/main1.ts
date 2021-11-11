@@ -27,8 +27,12 @@ export class RelayerFeeCalculator {
   private configs: ChainConfig[] = mainConfigs;
   private relayerAddrs = {};
   private startAndEndBolck = {};
+  private isDefaultMode = true;
 
   constructor() {
+    this.isDefaultMode = !!!process.argv[2];
+
+    console.log(!!!process.argv[2]);
     for (const addr of RELAYER_ADDRESSES.split(",")) {
       const lowerCaseAddr = addr.toLowerCase();
       this.relayerAddrs[lowerCaseAddr] = true;
@@ -43,7 +47,6 @@ export class RelayerFeeCalculator {
       bridgeBalances,
       tokenPrices,
     } = await this.resolveTx();
-
     await this.formatAndWriteCsv(
       subtotalGas,
       allSubtotalGas,
@@ -64,6 +67,15 @@ export class RelayerFeeCalculator {
     console.log("Gas Usage Details");
     for (const c of this.configs) {
       let { startBlock, endBlock } = this.startAndEndBolck[c.network];
+      let totalGasOnSingleNet = new BigNumber(0);
+      for (const item of Object.values(subtotalGas)) {
+        for (const key in item as Object) {
+          if (key === c.network) {
+            totalGasOnSingleNet = totalGasOnSingleNet.plus(item[key]);
+          }
+        }
+      }
+      console.log(`Total gas used on ${c.network}: ${totalGasOnSingleNet}`);
       for (const addr in this.relayerAddrs) {
         let subtotal = new BigNumber(0);
         if (subtotalGas[addr] && subtotalGas[addr][c.network]) {
@@ -78,20 +90,30 @@ export class RelayerFeeCalculator {
         }
 
         const allSubtotal = allSubtotalGas[addr] || new BigNumber(0);
-        const percent = allSubtotal.dividedBy(totalGas);
+        let percent = new BigNumber(0);
+        if (this.isDefaultMode) {
+          percent = subtotal.dividedBy(totalGasOnSingleNet);
+        } else {
+          percent = allSubtotal.dividedBy(totalGas);
+        }
         const tokenPrice = tokenPrices[c.network];
+
+        const bridgeBalance = bridgeBalances[c.network]
+          .div(UNIT_WEI)
+          .times(tokenPrice);
 
         results.push({
           network: c.network,
           addr,
-          award: new BigNumber(bridgeBalances[c.network])
-            .times(percent)
-            .toFixed(0),
+          bridgeBalance: bridgeBalance.toFixed(2),
+          award: bridgeBalances[c.network].times(percent).toFixed(0),
+          awardDollar: bridgeBalance.times(percent).toFixed(2),
           gasPercent: percent.toFixed(3),
           tokenPrice,
           gasUsed: subtotal.toFixed(2),
           allGasUsed: allSubtotal.toFixed(2),
           totalGas: totalGas.toFixed(2),
+          totalGasOnSingleNet: totalGasOnSingleNet.toFixed(2),
           startBlock,
           endBlock,
         });
@@ -110,12 +132,15 @@ export class RelayerFeeCalculator {
       [
         { id: "network", title: "Network" },
         { id: "addr", title: "Address" },
+        { id: "bridgeBalance", title: "Bridge Balance" },
         { id: "award", title: "Award" },
+        { id: "awardDollar", title: "Award Dollar" },
         { id: "gasPercent", title: "Gas%" },
         { id: "tokenPrice", title: "Price" },
         { id: "gasUsed", title: "Gas Used" },
         { id: "allGasUsed", title: "All Gas Used" },
         { id: "totalGas", title: "All Gas" },
+        { id: "totalGasOnSingleNet", title: "All Gas On This Net" },
         { id: "startBlock", title: "Start Block" },
         { id: "endBlock", title: "End Block" },
       ],
@@ -131,7 +156,7 @@ export class RelayerFeeCalculator {
     //- 存储某个relayer在所有链上的gas
     let allSubtotalGas: { [key: string]: BigNumber } = {};
     //- bridge上的balance
-    let bridgeBalances: { [network: string]: string } = {};
+    let bridgeBalances: { [network: string]: BigNumber } = {};
     //- relayer 在某个链上的gas
     let subtotalGas: {
       [relayerAddress: string]: { [network: string]: BigNumber };
@@ -204,7 +229,7 @@ export class RelayerFeeCalculator {
       const balance = (
         await config.provider.getBalance(config.bridgeAddr)
       ).toString();
-      bridgeBalances[config.network] = balance;
+      bridgeBalances[config.network] = new BigNumber(balance);
       console.log(`Current bridge balance: `, balance.toString());
     }
 
