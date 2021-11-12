@@ -32,7 +32,7 @@ export class RelayerFeeCalculator {
   constructor() {
     this.isDefaultMode = !!!process.argv[2];
 
-    console.log(!!!process.argv[2]);
+    console.log(`Default mode: ${!!!process.argv[2]}`);
     for (const addr of RELAYER_ADDRESSES.split(",")) {
       const lowerCaseAddr = addr.toLowerCase();
       this.relayerAddrs[lowerCaseAddr] = true;
@@ -64,6 +64,7 @@ export class RelayerFeeCalculator {
     tokenPrices
   ) {
     let results = [];
+    console.log("-".repeat(80));
     console.log("Gas Usage Details");
     let totalBridgeBalanceUSD = new BigNumber(0);
     for (const key in bridgeBalances) {
@@ -165,7 +166,9 @@ export class RelayerFeeCalculator {
     const year = date.getFullYear();
     const month = `0${date.getMonth() + 1}`.slice(-2);
     const day = `0${date.getDate()}`.slice(-2);
-    const filename = `${year}${month}${day}.csv`;
+    const filename = `${year}${month}${day}${
+      this.isDefaultMode ? "-default" : ""
+    }.csv`;
     const filepath = path.join(__dirname, "..", "csv", filename);
     await saveCSVFromObjects(
       results,
