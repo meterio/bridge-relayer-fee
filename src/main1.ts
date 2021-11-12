@@ -66,20 +66,38 @@ export class RelayerFeeCalculator {
     let results = [];
     console.log("Gas Usage Details");
     for (const c of this.configs) {
+      console.log("-".repeat(80));
+
       let { startBlock, endBlock } = this.startAndEndBolck[c.network];
-      let totalGasOnSingleNet = new BigNumber(0);
+      console.log(
+        `Get data from ${c.network} by block ${startBlock} to ${endBlock}`
+      );
+
+      const tokenPrice = tokenPrices[c.network];
+      console.log(`Token ${c.symbol} price: ${tokenPrice} USD.`);
+
+      const bridgeBalance = bridgeBalances[c.network];
+      const bridgeBalanceUSD = bridgeBalance.times(tokenPrice);
+      console.log(
+        `${c.network} bridge balance: ${bridgeBalance} ${c.symbol}, ${bridgeBalanceUSD} USD.`
+      );
+
+      let currNetTotalGas = new BigNumber(0);
       for (const item of Object.values(subtotalGas)) {
         for (const key in item as Object) {
           if (key === c.network) {
-            totalGasOnSingleNet = totalGasOnSingleNet.plus(item[key]);
+            currNetTotalGas = currNetTotalGas.plus(item[key]);
           }
         }
       }
-      console.log(`Total gas used on ${c.network}: ${totalGasOnSingleNet}`);
+      const currNetTotalGasUSD = currNetTotalGas.times(tokenPrice);
+      console.log(
+        `Total gas used on ${c.network}: ${currNetTotalGas} ${c.symbol}, ${currNetTotalGasUSD} USD.`
+      );
       for (const addr in this.relayerAddrs) {
-        let subtotal = new BigNumber(0);
+        let gasUsed = new BigNumber(0);
         if (subtotalGas[addr] && subtotalGas[addr][c.network]) {
-          subtotal = subtotalGas[addr][c.network];
+          gasUsed = subtotalGas[addr][c.network];
         } else {
           console.log(
             "relayer not in tx.from or tx.to ",
@@ -88,36 +106,54 @@ export class RelayerFeeCalculator {
             c.network
           );
         }
+        const gasUsedUSD = gasUsed.times(tokenPrice);
+        console.log(
+          `Relayer ${addr} used gas on ${c.network}: ${gasUsed} ${c.symbol}, ${gasUsedUSD} USD.`
+        );
 
-        const allSubtotal = allSubtotalGas[addr] || new BigNumber(0);
+        const allGasUsed = allSubtotalGas[addr] || new BigNumber(0);
+        const allGasUsedUSD = (allGasUsed as BigNumber).times(tokenPrice);
         let percent = new BigNumber(0);
         if (this.isDefaultMode) {
-          percent = subtotal.dividedBy(totalGasOnSingleNet);
+          percent = gasUsed.dividedBy(currNetTotalGas);
         } else {
-          percent = allSubtotal.dividedBy(totalGas);
+          percent = allGasUsed.dividedBy(totalGas);
         }
-        const tokenPrice = tokenPrices[c.network];
+        console.log(
+          `Relayer ${addr} used gas percent on ${c.network}: ${percent.times(
+            100
+          )} %`
+        );
 
-        const bridgeBalance = bridgeBalances[c.network]
-          .div(UNIT_WEI)
-          .times(tokenPrice);
+        const award = (bridgeBalance as BigNumber).times(percent);
+        const awardUSD = award.times(tokenPrice);
+
+        console.log(
+          `Relayer ${addr} award on ${c.network}: ${award} ${c.symbol}, ${awardUSD} USD.`
+        );
+
+        const totalGasUSD = (totalGas as BigNumber).times(tokenPrice);
 
         results.push({
           network: c.network,
-          addr,
-          bridgeBalance: bridgeBalance.toFixed(2),
-          award: bridgeBalances[c.network].times(percent).toFixed(0),
-          awardDollar: bridgeBalance.times(percent).toFixed(2),
-          gasPercent: percent.toFixed(3),
+          relayer: addr,
           tokenPrice,
-          gasUsed: subtotal.toFixed(2),
-          allGasUsed: allSubtotal.toFixed(2),
-          totalGas: totalGas.toFixed(2),
-          totalGasOnSingleNet: totalGasOnSingleNet.toFixed(2),
+          bridgeBalance: bridgeBalance.toFixed(),
+          bridgeBalanceUSD: bridgeBalanceUSD.toFixed(),
+          totalGas: totalGas.toFixed(),
+          totalGasUSD: totalGasUSD.toFixed(),
+          currNetTotalGas: currNetTotalGas.toFixed(),
+          currNetTotalGasUSD: currNetTotalGasUSD.toFixed(),
+          gasUsed: gasUsed.toFixed(),
+          gasUsedUSD: gasUsedUSD.toFixed(),
+          gasPercent: percent.toFixed(),
+          allGasUsed: allGasUsed.toFixed(),
+          allGasUsedUSD: allGasUsedUSD.toFixed(),
+          award: award.toFixed(0),
+          awardUSD: awardUSD.toFixed(),
           startBlock,
           endBlock,
         });
-        console.log(`  Relayer ${addr} used gas: ${subtotal} in ${c.network}`);
       }
     }
 
@@ -131,16 +167,21 @@ export class RelayerFeeCalculator {
       results,
       [
         { id: "network", title: "Network" },
-        { id: "addr", title: "Address" },
-        { id: "bridgeBalance", title: "Bridge Balance" },
-        { id: "award", title: "Award" },
-        { id: "awardDollar", title: "Award Dollar" },
+        { id: "relayer", title: "Relayer" },
+        { id: "tokenPrice", title: "Token Price In USD" },
+        { id: "bridgeBalance", title: "Bridge Balance Decimals" },
+        { id: "bridgeBalanceUSD", title: "Bridge Blance In USD" },
+        { id: "totalGas", title: "All Gas Decimals" },
+        { id: "totalGasUSD", title: "All Gas In USD" },
+        { id: "currNetTotalGas", title: "Current Network Total Gas Decimals" },
+        { id: "currNetTotalGasUSD", title: "Current Network Total Gas In USD" },
+        { id: "gasUsed", title: "Gas Used Decimals" },
+        { id: "gasUsedUSD", title: "Gas Used In USD" },
         { id: "gasPercent", title: "Gas%" },
-        { id: "tokenPrice", title: "Price" },
-        { id: "gasUsed", title: "Gas Used" },
-        { id: "allGasUsed", title: "All Gas Used" },
-        { id: "totalGas", title: "All Gas" },
-        { id: "totalGasOnSingleNet", title: "All Gas On This Net" },
+        { id: "allGasUsed", title: "All Gas Used Decimals" },
+        { id: "allGasUsedUSD", title: "All Gas Used In USD" },
+        { id: "award", title: "Award Decimals" },
+        { id: "awardUSD", title: "Award In USD" },
         { id: "startBlock", title: "Start Block" },
         { id: "endBlock", title: "End Block" },
       ],
@@ -196,7 +237,6 @@ export class RelayerFeeCalculator {
       // 获取token价格
       const priceData = await getTokenPrice(config.coinId);
       const price = priceData[config.coinId]["usd"];
-      console.log("token price: ", priceData);
 
       tokenPrices[config.network] = price;
 
@@ -218,19 +258,19 @@ export class RelayerFeeCalculator {
         }
         const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice);
 
-        const dollorGas = gas.div(UNIT_WEI).times(price);
+        const decimalsGas = gas.div(UNIT_WEI);
 
         subtotalGas[relayer][config.network] =
-          subtotalGas[relayer][config.network].plus(dollorGas);
-        allSubtotalGas[relayer] = allSubtotalGas[relayer].plus(dollorGas);
-        totalGas = totalGas.plus(dollorGas);
+          subtotalGas[relayer][config.network].plus(decimalsGas);
+        allSubtotalGas[relayer] = allSubtotalGas[relayer].plus(decimalsGas);
+        totalGas = totalGas.plus(decimalsGas);
       }
 
       const balance = (
         await config.provider.getBalance(config.bridgeAddr)
       ).toString();
-      bridgeBalances[config.network] = new BigNumber(balance);
-      console.log(`Current bridge balance: `, balance.toString());
+      const decimalsBalance = new BigNumber(balance).dividedBy(UNIT_WEI);
+      bridgeBalances[config.network] = decimalsBalance;
     }
 
     return {

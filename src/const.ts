@@ -30,6 +30,7 @@ export class ChainConfig {
   provider?: ethers.providers.Provider;
   windowSize: number;
   coinId: string;
+  symbol: string;
 }
 
 export const mainConfigs: ChainConfig[] = [
@@ -42,6 +43,7 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0xde4fC7C3C5E7bE3F16506FcC790a8D93f8Ca0b40",
     windowSize: 500000,
     coinId: "ethereum",
+    symbol: "ETH",
   },
   {
     network: Network.MeterMainnet,
@@ -51,6 +53,7 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x60f1ABAa3ED8A573c91C65A5b82AeC4BF35b77b8",
     windowSize: 1000000,
     coinId: "meter-stable",
+    symbol: "MTR",
   },
   {
     network: Network.BSCMainnet,
@@ -60,6 +63,7 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x5945241BBB68B4454bB67Bd2B069e74C09AC3D51",
     windowSize: 5000,
     coinId: "binancecoin",
+    symbol: "BNB",
   },
   {
     network: Network.AvalancheMainnet,
@@ -69,6 +73,7 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
     windowSize: 5000,
     coinId: "avalanche-2",
+    symbol: "AVAX",
   },
   {
     network: Network.MoonriverMainnet,
@@ -78,6 +83,7 @@ export const mainConfigs: ChainConfig[] = [
     handlerAddr: "0x48A6fd66512D45006FC0426576c264D03Dfda304",
     windowSize: 10000,
     coinId: "moonriver",
+    symbol: "MOVR",
   },
 ];
 for (const c of mainConfigs) {
