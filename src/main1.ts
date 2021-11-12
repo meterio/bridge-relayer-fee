@@ -42,15 +42,15 @@ export class RelayerFeeCalculator {
   async start() {
     const {
       subtotalGas,
-      allSubtotalGas,
-      totalGas,
+      allSubtotalGasUSD,
+      totalGasUSD,
       bridgeBalances,
       tokenPrices,
     } = await this.resolveTx();
     await this.formatAndWriteCsv(
       subtotalGas,
-      allSubtotalGas,
-      totalGas,
+      allSubtotalGasUSD,
+      totalGasUSD,
       bridgeBalances,
       tokenPrices
     );
@@ -58,13 +58,21 @@ export class RelayerFeeCalculator {
 
   async formatAndWriteCsv(
     subtotalGas,
-    allSubtotalGas,
-    totalGas,
+    allSubtotalGasUSD,
+    totalGasUSD,
     bridgeBalances,
     tokenPrices
   ) {
     let results = [];
     console.log("Gas Usage Details");
+    let totalBridgeBalanceUSD = new BigNumber(0);
+    for (const key in bridgeBalances) {
+      totalBridgeBalanceUSD = totalBridgeBalanceUSD.plus(
+        bridgeBalances[key].times(tokenPrices[key])
+      );
+    }
+    console.log(`All bridge balance: ${totalBridgeBalanceUSD} USD.`);
+    console.log(`All used gas: ${totalGasUSD} USD.`);
     for (const c of this.configs) {
       console.log("-".repeat(80));
 
@@ -111,13 +119,12 @@ export class RelayerFeeCalculator {
           `Relayer ${addr} used gas on ${c.network}: ${gasUsed} ${c.symbol}, ${gasUsedUSD} USD.`
         );
 
-        const allGasUsed = allSubtotalGas[addr] || new BigNumber(0);
-        const allGasUsedUSD = (allGasUsed as BigNumber).times(tokenPrice);
+        const allGasUsedUSD = allSubtotalGasUSD[addr] || new BigNumber(0);
         let percent = new BigNumber(0);
         if (this.isDefaultMode) {
           percent = gasUsed.dividedBy(currNetTotalGas);
         } else {
-          percent = allGasUsed.dividedBy(totalGas);
+          percent = allGasUsedUSD.dividedBy(totalGasUSD);
         }
         console.log(
           `Relayer ${addr} used gas percent on ${c.network}: ${percent.times(
@@ -132,22 +139,19 @@ export class RelayerFeeCalculator {
           `Relayer ${addr} award on ${c.network}: ${award} ${c.symbol}, ${awardUSD} USD.`
         );
 
-        const totalGasUSD = (totalGas as BigNumber).times(tokenPrice);
-
         results.push({
           network: c.network,
           relayer: addr,
           tokenPrice,
           bridgeBalance: bridgeBalance.toFixed(),
           bridgeBalanceUSD: bridgeBalanceUSD.toFixed(),
-          totalGas: totalGas.toFixed(),
+          totalBridgeBalanceUSD: totalBridgeBalanceUSD.toFixed(),
           totalGasUSD: totalGasUSD.toFixed(),
           currNetTotalGas: currNetTotalGas.toFixed(),
           currNetTotalGasUSD: currNetTotalGasUSD.toFixed(),
           gasUsed: gasUsed.toFixed(),
           gasUsedUSD: gasUsedUSD.toFixed(),
           gasPercent: percent.toFixed(),
-          allGasUsed: allGasUsed.toFixed(),
           allGasUsedUSD: allGasUsedUSD.toFixed(),
           award: award.toFixed(0),
           awardUSD: awardUSD.toFixed(),
@@ -171,14 +175,13 @@ export class RelayerFeeCalculator {
         { id: "tokenPrice", title: "Token Price In USD" },
         { id: "bridgeBalance", title: "Bridge Balance Decimals" },
         { id: "bridgeBalanceUSD", title: "Bridge Blance In USD" },
-        { id: "totalGas", title: "All Gas Decimals" },
+        { id: "totalBridgeBalanceUSD", title: "All Bridge Blance In USD" },
         { id: "totalGasUSD", title: "All Gas In USD" },
         { id: "currNetTotalGas", title: "Current Network Total Gas Decimals" },
         { id: "currNetTotalGasUSD", title: "Current Network Total Gas In USD" },
         { id: "gasUsed", title: "Gas Used Decimals" },
         { id: "gasUsedUSD", title: "Gas Used In USD" },
         { id: "gasPercent", title: "Gas%" },
-        { id: "allGasUsed", title: "All Gas Used Decimals" },
         { id: "allGasUsedUSD", title: "All Gas Used In USD" },
         { id: "award", title: "Award Decimals" },
         { id: "awardUSD", title: "Award In USD" },
@@ -192,10 +195,10 @@ export class RelayerFeeCalculator {
   }
 
   async resolveTx() {
-    //- 所有relayer在所有链上的gas
-    let totalGas = new BigNumber(0);
-    //- 存储某个relayer在所有链上的gas
-    let allSubtotalGas: { [key: string]: BigNumber } = {};
+    //- 所有relayer在所有链上的gas in USD
+    let totalGasUSD = new BigNumber(0);
+    //- 存储某个relayer在所有链上的gas in USD
+    let allSubtotalGasUSD: { [key: string]: BigNumber } = {};
     //- bridge上的balance
     let bridgeBalances: { [network: string]: BigNumber } = {};
     //- relayer 在某个链上的gas
@@ -247,8 +250,8 @@ export class RelayerFeeCalculator {
         } else {
           relayer = tx.to.toLowerCase();
         }
-        if (!(relayer in allSubtotalGas)) {
-          allSubtotalGas[relayer] = new BigNumber(0);
+        if (!(relayer in allSubtotalGasUSD)) {
+          allSubtotalGasUSD[relayer] = new BigNumber(0);
         }
         if (!(relayer in subtotalGas)) {
           subtotalGas[relayer] = {};
@@ -259,11 +262,12 @@ export class RelayerFeeCalculator {
         const gas = new BigNumber(tx.gasUsed).times(tx.gasPrice);
 
         const decimalsGas = gas.div(UNIT_WEI);
+        const USDGas = decimalsGas.times(price);
 
         subtotalGas[relayer][config.network] =
           subtotalGas[relayer][config.network].plus(decimalsGas);
-        allSubtotalGas[relayer] = allSubtotalGas[relayer].plus(decimalsGas);
-        totalGas = totalGas.plus(decimalsGas);
+        allSubtotalGasUSD[relayer] = allSubtotalGasUSD[relayer].plus(USDGas);
+        totalGasUSD = totalGasUSD.plus(USDGas);
       }
 
       const balance = (
@@ -275,8 +279,8 @@ export class RelayerFeeCalculator {
 
     return {
       subtotalGas,
-      allSubtotalGas,
-      totalGas,
+      allSubtotalGasUSD,
+      totalGasUSD,
       bridgeBalances,
       tokenPrices,
     };
