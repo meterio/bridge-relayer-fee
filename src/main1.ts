@@ -145,7 +145,7 @@ export class RelayerFeeCalculator {
         const awardWei = award.times(UNIT_WEI);
         const awardUSD = award.times(tokenPrice);
 
-        amounts.push(awardWei.toFixed());
+        amounts.push(awardWei.toFixed(0));
 
         console.log(
           `Relayer ${addr} award on ${c.network}: ${award} ${c.symbol}, ${awardUSD} USD.`
@@ -155,19 +155,19 @@ export class RelayerFeeCalculator {
           network: c.network,
           relayer: addr,
           tokenPrice,
-          bridgeBalance: bridgeBalance.toFixed(),
-          bridgeBalanceUSD: bridgeBalanceUSD.toFixed(),
-          totalBridgeBalanceUSD: totalBridgeBalanceUSD.toFixed(),
-          totalGasUSD: totalGasUSD.toFixed(),
-          currNetTotalGas: currNetTotalGas.toFixed(),
-          currNetTotalGasUSD: currNetTotalGasUSD.toFixed(),
-          gasUsed: gasUsed.toFixed(),
-          gasUsedUSD: gasUsedUSD.toFixed(),
-          gasPercent: percent.toFixed(),
-          allGasUsedUSD: allGasUsedUSD.toFixed(),
-          awardWei: awardWei.toFixed(),
-          award: award.toFixed(),
-          awardUSD: awardUSD.toFixed(),
+          bridgeBalance: bridgeBalance.toFixed(0),
+          bridgeBalanceUSD: bridgeBalanceUSD.toFixed(2),
+          totalBridgeBalanceUSD: totalBridgeBalanceUSD.toFixed(2),
+          totalGasUSD: totalGasUSD.toFixed(2),
+          currNetTotalGas: currNetTotalGas.toFixed(0),
+          currNetTotalGasUSD: currNetTotalGasUSD.toFixed(2),
+          gasUsed: gasUsed.toFixed(0),
+          gasUsedUSD: gasUsedUSD.toFixed(2),
+          gasPercent: percent.toFixed(3),
+          allGasUsedUSD: allGasUsedUSD.toFixed(2),
+          awardWei: awardWei.toFixed(0),
+          award: award.toFixed(0),
+          awardUSD: awardUSD.toFixed(2),
           startBlock,
           endBlock,
         });
@@ -179,7 +179,7 @@ export class RelayerFeeCalculator {
       };
 
       console.log(
-        `Summary: --addrs ${summary[c.network].addrs} --amounts ${
+        `Summary ${c.network} --addrs ${summary[c.network].addrs} --amounts ${
           summary[c.network].amounts
         }`
       );
@@ -210,7 +210,7 @@ export class RelayerFeeCalculator {
         { id: "currNetTotalGasUSD", title: "Current Network Total Gas In USD" },
         { id: "gasUsed", title: "Gas Used Decimals" },
         { id: "gasUsedUSD", title: "Gas Used In USD" },
-        { id: "gasPercent", title: "Gas%" },
+        { id: "gasPercent", title: "Gas Percent" },
         { id: "allGasUsedUSD", title: "All Gas Used In USD" },
         { id: "startBlock", title: "Start Block" },
         { id: "endBlock", title: "End Block" },
