@@ -99,6 +99,7 @@ export class RelayerFeeCalculator {
       let currNetTotalGas = new BigNumber(0);
       // 具体network上relayer要分的奖励
       const amounts = [];
+      const addrs = [];
       for (const item of Object.values(subtotalGas)) {
         for (const key in item as Object) {
           if (key === c.network) {
@@ -146,6 +147,7 @@ export class RelayerFeeCalculator {
         const awardUSD = award.times(tokenPrice);
 
         amounts.push(awardWei.toFixed(0));
+        addrs.push(addr);
 
         console.log(
           `Relayer ${addr} award on ${c.network}: ${award} ${c.symbol}, ${awardUSD} USD.`
@@ -174,7 +176,7 @@ export class RelayerFeeCalculator {
       }
 
       summary[c.network] = {
-        addrs: Object.keys(this.relayerAddrs).join(","),
+        addrs: addrs.join(","),
         amounts: amounts.join(","),
       };
 
