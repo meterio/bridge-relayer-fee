@@ -1,6 +1,7 @@
 require("./utils/validateEnv");
 
 import path from "path";
+import fs from "fs";
 
 import BigNumber from "bignumber.js";
 import { ChainConfig, Network, mainConfigs, UNIT_WEI } from "./const";
@@ -74,6 +75,10 @@ export class RelayerFeeCalculator {
     }
     console.log(`All bridge balance: ${totalBridgeBalanceUSD} USD.`);
     console.log(`All used gas: ${totalGasUSD} USD.`);
+
+    const summary: { [network: string]: { addrs: string; amounts: string } } =
+      {};
+
     for (const c of this.configs) {
       console.log("-".repeat(80));
 
@@ -90,8 +95,10 @@ export class RelayerFeeCalculator {
       console.log(
         `${c.network} bridge balance: ${bridgeBalance} ${c.symbol}, ${bridgeBalanceUSD} USD.`
       );
-
+      // 具体某个network上的所有的gas
       let currNetTotalGas = new BigNumber(0);
+      // 具体network上relayer要分的奖励
+      const amounts = [];
       for (const item of Object.values(subtotalGas)) {
         for (const key in item as Object) {
           if (key === c.network) {
@@ -103,6 +110,7 @@ export class RelayerFeeCalculator {
       console.log(
         `Total gas used on ${c.network}: ${currNetTotalGas} ${c.symbol}, ${currNetTotalGasUSD} USD.`
       );
+
       for (const addr in this.relayerAddrs) {
         let gasUsed = new BigNumber(0);
         if (subtotalGas[addr] && subtotalGas[addr][c.network]) {
@@ -134,7 +142,10 @@ export class RelayerFeeCalculator {
         );
 
         const award = (bridgeBalance as BigNumber).times(percent);
+        const awardWei = award.times(UNIT_WEI);
         const awardUSD = award.times(tokenPrice);
+
+        amounts.push(awardWei.toFixed());
 
         console.log(
           `Relayer ${addr} award on ${c.network}: ${award} ${c.symbol}, ${awardUSD} USD.`
@@ -154,12 +165,24 @@ export class RelayerFeeCalculator {
           gasUsedUSD: gasUsedUSD.toFixed(),
           gasPercent: percent.toFixed(),
           allGasUsedUSD: allGasUsedUSD.toFixed(),
-          award: award.toFixed(0),
+          awardWei: awardWei.toFixed(),
+          award: award.toFixed(),
           awardUSD: awardUSD.toFixed(),
           startBlock,
           endBlock,
         });
       }
+
+      summary[c.network] = {
+        addrs: Object.keys(this.relayerAddrs).join(","),
+        amounts: amounts.join(","),
+      };
+
+      console.log(
+        `Summary: --addrs ${summary[c.network].addrs} --amounts ${
+          summary[c.network].amounts
+        }`
+      );
     }
 
     const date = new Date();
@@ -168,13 +191,16 @@ export class RelayerFeeCalculator {
     const day = `0${date.getDate()}`.slice(-2);
     const filename = `${year}${month}${day}${
       this.isDefaultMode ? "-default" : ""
-    }.csv`;
-    const filepath = path.join(__dirname, "..", "csv", filename);
+    }`;
+    const filepath = path.join(__dirname, "..", "csv", filename + ".csv");
     await saveCSVFromObjects(
       results,
       [
         { id: "network", title: "Network" },
         { id: "relayer", title: "Relayer" },
+        { id: "awardWei", title: "Award Wei" },
+        { id: "award", title: "Award Decimals" },
+        { id: "awardUSD", title: "Award In USD" },
         { id: "tokenPrice", title: "Token Price In USD" },
         { id: "bridgeBalance", title: "Bridge Balance Decimals" },
         { id: "bridgeBalanceUSD", title: "Bridge Blance In USD" },
@@ -186,8 +212,6 @@ export class RelayerFeeCalculator {
         { id: "gasUsedUSD", title: "Gas Used In USD" },
         { id: "gasPercent", title: "Gas%" },
         { id: "allGasUsedUSD", title: "All Gas Used In USD" },
-        { id: "award", title: "Award Decimals" },
-        { id: "awardUSD", title: "Award In USD" },
         { id: "startBlock", title: "Start Block" },
         { id: "endBlock", title: "End Block" },
       ],
@@ -195,18 +219,35 @@ export class RelayerFeeCalculator {
     );
 
     console.log(`Calculation result saved at ${filepath}`);
+
+    const summaryFilepath = path.join(
+      __dirname,
+      "..",
+      "txt",
+      filename + ".txt"
+    );
+    let data = "";
+    for (const network in summary) {
+      data += network + " --addrs ";
+      data += summary[network].addrs + " --amounts ";
+      data += summary[network].amounts + "\n";
+    }
+
+    fs.writeFileSync(summaryFilepath, data);
+
+    console.log(`Summary saved at ${summaryFilepath}`);
   }
 
   async resolveTx() {
     //- 所有relayer在所有链上的gas in USD
     let totalGasUSD = new BigNumber(0);
     //- 存储某个relayer在所有链上的gas in USD
-    let allSubtotalGasUSD: { [key: string]: BigNumber } = {};
+    let allSubtotalGasUSD: { [relayer: string]: BigNumber } = {};
     //- bridge上的balance
     let bridgeBalances: { [network: string]: BigNumber } = {};
     //- relayer 在某个链上的gas
     let subtotalGas: {
-      [relayerAddress: string]: { [network: string]: BigNumber };
+      [relayer: string]: { [network: string]: BigNumber };
     } = {};
     //- 存储token price
     let tokenPrices: { [network: string]: number } = {};
