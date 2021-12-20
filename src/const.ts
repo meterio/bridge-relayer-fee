@@ -14,6 +14,8 @@ export enum Network {
   AvalancheTestnet = "AvalancheTestnet",
   MoonriverMainnet = "MoonriverMainnet",
   MoonriverTestnet = "MoonriverTestnet",
+  // ThetaMainnet = "ThetaMainnet",
+  PolisMainnet= "PolisMainent"
 }
 
 export enum Mode {
@@ -85,6 +87,26 @@ export const mainConfigs: ChainConfig[] = [
     coinId: "moonriver",
     symbol: "MOVR",
   },
+  // {
+  //   chainId: 6,
+  //   network: Network.ThetaMainnet,
+  //   bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
+  //   handlerAddr: "0x48A6fd66512D45006FC0426576c264D03Dfda304",
+  //   providerUrl: "https://eth-rpc-api.thetatoken.org/rpc",
+  //   symbol: "TFUEL",
+  //   windowSize: 100,
+  //   coinId: 'theta-fuel'
+  // },
+  {
+    chainId: 7,
+    network: Network.PolisMainnet,
+    bridgeAddr: "0xF41e7FC4eC990298d36f667B93951c9dba65224e",
+    handlerAddr: "0x911F32FD5d347b4EEB61fDb80d9F1063Be1E78E6",
+    providerUrl: "https://rpc.polis.tech",
+    symbol: "POLIS",
+    windowSize: 10000,
+    coinId: 'polis'
+  }
 ];
 for (const c of mainConfigs) {
   c.provider = new ethers.providers.JsonRpcProvider(c.providerUrl);
