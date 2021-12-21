@@ -22,6 +22,8 @@ const {
   AVA_END_BLOCK,
   MOONBEAM_START_BLOCK,
   MOONBEAM_END_BLOCK,
+  POLIS_START_BLOCK,
+  POLIS_END_BLOCK
 } = process.env;
 
 export class RelayerFeeCalculator {
@@ -356,6 +358,10 @@ export class RelayerFeeCalculator {
       case Network.MoonriverMainnet:
         startBlock = MOONBEAM_START_BLOCK;
         endBlock = MOONBEAM_END_BLOCK;
+        break;
+      case Network.PolisMainnet:
+        startBlock = POLIS_START_BLOCK;
+        endBlock = POLIS_END_BLOCK;
         break;
       default:
         startBlock = 0;
