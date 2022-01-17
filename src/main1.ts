@@ -23,7 +23,9 @@ const {
   MOONBEAM_START_BLOCK,
   MOONBEAM_END_BLOCK,
   POLIS_START_BLOCK,
-  POLIS_END_BLOCK
+  POLIS_END_BLOCK,
+  THETA_START_BLOCK,
+  THETA_END_BLOCK
 } = process.env;
 
 export class RelayerFeeCalculator {
@@ -104,7 +106,7 @@ export class RelayerFeeCalculator {
       const addrs = [];
       for (const item of Object.values(subtotalGas)) {
         for (const key in item as Object) {
-          if (key === c.network) {
+          if (key === c.network && item[key]) {
             currNetTotalGas = currNetTotalGas.plus(item[key]);
           }
         }
@@ -138,6 +140,11 @@ export class RelayerFeeCalculator {
         } else {
           percent = allGasUsedUSD.dividedBy(totalGasUSD);
         }
+
+        if (percent.isNaN()) {
+          percent = new BigNumber(0);
+        }
+
         console.log(
           `Relayer ${addr} used gas percent on ${c.network}: ${percent.times(
             100
@@ -362,6 +369,9 @@ export class RelayerFeeCalculator {
       case Network.PolisMainnet:
         startBlock = POLIS_START_BLOCK;
         endBlock = POLIS_END_BLOCK;
+      case Network.ThetaMainnet:
+        startBlock = THETA_START_BLOCK;
+        endBlock = THETA_END_BLOCK;
         break;
       default:
         startBlock = 0;
