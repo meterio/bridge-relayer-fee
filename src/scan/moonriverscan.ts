@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ScanAPI } from "./scanapi";
 
-export class MoonbeamScanAPI extends ScanAPI {
+export class MoonriverScanAPI extends ScanAPI {
   constructor() {
     super();
   }

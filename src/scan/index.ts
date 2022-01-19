@@ -4,7 +4,7 @@ import {BSCScanAPI} from "./bscscan";
 import {EthScanAPI} from "./etherscan";
 import {MeterScanAPI} from "./meterscan";
 import {AvalancheScanAPI} from "./avalanchescan";
-import {MoonbeamScanAPI} from "./moonbeamscan";
+import {MoonriverScanAPI} from "./moonriverscan";
 import {PolisScanAPI} from "./polisscan";
 import {ThetaScanAPI} from "./thetascan";
 
@@ -13,7 +13,7 @@ export const SCAN_APIS = {
   [Network.BSCMainnet]: new BSCScanAPI(),
   [Network.MeterMainnet]: new MeterScanAPI(),
   [Network.AvalancheMainnet]: new AvalancheScanAPI(),
-  [Network.MoonriverMainnet]: new MoonbeamScanAPI(),
+  [Network.MoonriverMainnet]: new MoonriverScanAPI(),
   [Network.PolisMainnet]: new PolisScanAPI(),
   [Network.ThetaMainnet]: new ThetaScanAPI()
 };

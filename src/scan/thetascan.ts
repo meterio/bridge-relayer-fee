@@ -29,24 +29,28 @@ export class ThetaScanAPI extends ScanAPI {
         end = Number(endBlock);
       }
       console.log(`Get Theta txs from ${start} to ${end}`)
-      const url = `https://explorer.thetatoken.org:8443/api/transactions/blockrange?blockStart=${start}&blockEnd=${end}`;
-      const res = await axios.get(url);
-      const txs = res.data.body.data
-      console.log('txs length: ', txs.length);
-      for (const tx of txs) {
-        if (tx.data.from && tx.data.to) {
-          result.push({
-            ...tx,
-            from: tx.data.from.address,
-            to: tx.data.to.address,
-            gasUsed: tx.receipt.GasUsed,
-            gasPrice: tx.data.gas_price
-          })
+      try {
+        const url = `https://explorer.thetatoken.org:8443/api/transactions/blockrange?blockStart=${start}&blockEnd=${end}`;
+        const res = await axios.get(url);
+        const txs = res.data.body.data
+        console.log('txs length: ', txs.length);
+        for (const tx of txs) {
+          if (tx.data.from && tx.data.to) {
+            result.push({
+              ...tx,
+              from: tx.data.from.address,
+              to: tx.data.to.address,
+              gasUsed: tx.receipt.GasUsed,
+              gasPrice: tx.data.gas_price
+            })
+          }
         }
-      }
 
-      start = end + 1;
-      end = start + MaxBlockPerQuery;
+        start = end + 1;
+        end = start + MaxBlockPerQuery;
+      } catch(e) {
+        console.log('curr error: ', e);
+      }
     }
     
     return result;

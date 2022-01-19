@@ -20,8 +20,8 @@ const {
   BSC_END_BLOCK,
   AVA_START_BLOCK,
   AVA_END_BLOCK,
-  MOONBEAM_START_BLOCK,
-  MOONBEAM_END_BLOCK,
+  MOONRIVER_START_BLOCK,
+  MOONRIVER_END_BLOCK,
   POLIS_START_BLOCK,
   POLIS_END_BLOCK,
   THETA_START_BLOCK,
@@ -363,8 +363,8 @@ export class RelayerFeeCalculator {
         endBlock = AVA_END_BLOCK;
         break;
       case Network.MoonriverMainnet:
-        startBlock = MOONBEAM_START_BLOCK;
-        endBlock = MOONBEAM_END_BLOCK;
+        startBlock = MOONRIVER_START_BLOCK;
+        endBlock = MOONRIVER_END_BLOCK;
         break;
       case Network.PolisMainnet:
         startBlock = POLIS_START_BLOCK;
