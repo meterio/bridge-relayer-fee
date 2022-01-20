@@ -369,6 +369,7 @@ export class RelayerFeeCalculator {
       case Network.PolisMainnet:
         startBlock = POLIS_START_BLOCK;
         endBlock = POLIS_END_BLOCK;
+        break;
       case Network.ThetaMainnet:
         startBlock = THETA_START_BLOCK;
         endBlock = THETA_END_BLOCK;

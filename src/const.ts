@@ -15,7 +15,7 @@ export enum Network {
   MoonriverMainnet = "MoonriverMainnet",
   MoonriverTestnet = "MoonriverTestnet",
   ThetaMainnet = "ThetaMainnet",
-  PolisMainnet= "PolisMainent"
+  PolisMainnet = "PolisMainnet"
 }
 
 export enum Mode {
