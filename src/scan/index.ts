@@ -7,6 +7,7 @@ import {AvalancheScanAPI} from "./avalanchescan";
 import {MoonriverScanAPI} from "./moonriverscan";
 import {PolisScanAPI} from "./polisscan";
 import {ThetaScanAPI} from "./thetascan";
+import { PolygonScanAPI } from "./polygonscan";
 
 export const SCAN_APIS = {
   [Network.Ethereum]: new EthScanAPI(),
@@ -15,5 +16,6 @@ export const SCAN_APIS = {
   [Network.AvalancheMainnet]: new AvalancheScanAPI(),
   [Network.MoonriverMainnet]: new MoonriverScanAPI(),
   [Network.PolisMainnet]: new PolisScanAPI(),
-  [Network.ThetaMainnet]: new ThetaScanAPI()
+  [Network.ThetaMainnet]: new ThetaScanAPI(),
+  [Network.PolygonMainnet]: new PolygonScanAPI()
 };

@@ -25,7 +25,9 @@ const {
   POLIS_START_BLOCK,
   POLIS_END_BLOCK,
   THETA_START_BLOCK,
-  THETA_END_BLOCK
+  THETA_END_BLOCK,
+  POLYGON_START_BLOCK,
+  POLYGON_END_BLOCK
 } = process.env;
 
 export class RelayerFeeCalculator {
@@ -373,6 +375,10 @@ export class RelayerFeeCalculator {
       case Network.ThetaMainnet:
         startBlock = THETA_START_BLOCK;
         endBlock = THETA_END_BLOCK;
+        break;
+      case Network.PolygonMainnet:
+        startBlock = POLYGON_START_BLOCK;
+        endBlock = POLYGON_END_BLOCK;
         break;
       default:
         startBlock = 0;

@@ -15,7 +15,8 @@ export enum Network {
   MoonriverMainnet = "MoonriverMainnet",
   MoonriverTestnet = "MoonriverTestnet",
   ThetaMainnet = "ThetaMainnet",
-  PolisMainnet = "PolisMainnet"
+  PolisMainnet = "PolisMainnet",
+  PolygonMainnet = "PolygonMainnet"
 }
 
 export enum Mode {
@@ -106,6 +107,16 @@ export const mainConfigs: ChainConfig[] = [
     symbol: "POLIS",
     windowSize: 10000,
     coinId: 'polis'
+  },
+  {
+    chainId: 10,
+    network: Network.PolygonMainnet,
+    bridgeAddr: "0x92D144A99bD3aB1177B8Df600769Ad5422DE7819",
+    handlerAddr: "0x123455360bE78C9289B38bcb4DbA427D9a6cD440",
+    providerUrl: "https://polygon-rpc.com",
+    symbol: "MATIC",
+    windowSize: 10000,
+    coinId: 'matic-network'
   }
 ];
 for (const c of mainConfigs) {
