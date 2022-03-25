@@ -16,7 +16,8 @@ export enum Network {
   MoonriverTestnet = "MoonriverTestnet",
   ThetaMainnet = "ThetaMainnet",
   PolisMainnet = "PolisMainnet",
-  PolygonMainnet = "PolygonMainnet"
+  PolygonMainnet = "PolygonMainnet",
+  Moonbeam = "Moonbeam"
 }
 
 export enum Mode {
@@ -117,6 +118,16 @@ export const mainConfigs: ChainConfig[] = [
     symbol: "MATIC",
     windowSize: 10000,
     coinId: 'matic-network'
+  },
+  {
+    chainId: 9,
+    network: Network.Moonbeam,
+    bridgeAddr: "0x39e592999Df2fd3B6f9261b0cfDeC72992F5aEFC",
+    handlerAddr: "0x911F32FD5d347b4EEB61fDb80d9F1063Be1E78E6",
+    providerUrl: "https://moonrpc.meter.io",
+    symbol: "GLMR",
+    windowSize: 10000,
+    coinId: 'moonbeam'
   }
 ];
 for (const c of mainConfigs) {

@@ -27,7 +27,9 @@ const {
   THETA_START_BLOCK,
   THETA_END_BLOCK,
   POLYGON_START_BLOCK,
-  POLYGON_END_BLOCK
+  POLYGON_END_BLOCK,
+  MOONBEAM_START_BLOCK,
+  MOONBEAM_END_BLOCK
 } = process.env;
 
 export class RelayerFeeCalculator {
@@ -192,8 +194,7 @@ export class RelayerFeeCalculator {
       };
 
       console.log(
-        `Summary ${c.network} --addrs ${summary[c.network].addrs} --amounts ${
-          summary[c.network].amounts
+        `Summary ${c.network} --addrs ${summary[c.network].addrs} --amounts ${summary[c.network].amounts
         }`
       );
     }
@@ -202,9 +203,8 @@ export class RelayerFeeCalculator {
     const year = date.getFullYear();
     const month = `0${date.getMonth() + 1}`.slice(-2);
     const day = `0${date.getDate()}`.slice(-2);
-    const filename = `${year}${month}${day}${
-      this.isDefaultMode ? "-default" : ""
-    }`;
+    const filename = `${year}${month}${day}${this.isDefaultMode ? "-default" : ""
+      }`;
     const filepath = path.join(__dirname, "..", "csv", filename + ".csv");
     await saveCSVFromObjects(
       results,
@@ -380,6 +380,10 @@ export class RelayerFeeCalculator {
         startBlock = POLYGON_START_BLOCK;
         endBlock = POLYGON_END_BLOCK;
         break;
+      case Network.Moonbeam:
+        startBlock = MOONBEAM_START_BLOCK;
+        endBlock = MOONBEAM_END_BLOCK;
+        break;
       default:
         startBlock = 0;
         endBlock = "latest";
@@ -395,7 +399,7 @@ export class RelayerFeeCalculator {
     };
   }
 
-  async stop() {}
+  async stop() { }
 }
 
 new RelayerFeeCalculator().start();
