@@ -16,7 +16,7 @@ export class MeterScanAPI extends ScanAPI {
     const res = await axios.get(url);
     return res.data.txSummaries.map((tx) => ({
       from: tx.origin,
-      to: tx.majorTo,
+      to: tx.clauses[0].to,
       gasUsed: tx.paid,
       gasPrice: 1,
     }));
